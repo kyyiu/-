@@ -1,0 +1,56 @@
+尝试1：同步调用,直接在ajax函数中return值
+复制代码
+ function getAjax(){
+     var result = 1;
+     $.ajax({
+         url : 'test.php',
+         type : "post",
+         data : {},
+         async : false,
+         success : function(data) {
+             return 2;
+         }
+     });
+    return result;
+}
+复制代码
+  --结果：失败，返回 1。
+  --分析原因：ajax内部是一个或多个定义的函数，ajax中return返回值，返回到ajax定义函数，而不是返回到ajax外层的函数getAjax
+***************************************************************************************************************
+尝试2：异步调用，将ajax获取的值赋值给全局变量，将全局变量返回
+复制代码
+ function getAjax(){
+     var result = 1;
+     $.ajax({
+         url : 'test.php',
+         type : "post",
+         data : {},
+         async : true,
+         success : function(data) {
+             result = 2;
+         }
+     });
+     return result;
+ }
+复制代码
+  --结果：失败，返回 1。
+  --分析原因：ajax请求和后面的return result语句异步执行，导致return result比result = 2先执行并返回result的值
+***************************************************************************************************************
+正确打开方式：同步调用，且ajax获取值后对全局变量赋值，最后将全局变量return
+复制代码
+ function getAjax(){
+     var result = 1;
+     $.ajax({
+         url : 'test.php',
+         type : "post",
+         data : {},
+         async : false,
+         success : function(data) {
+             result = 2;
+         }
+     });
+     return result;
+ }
+复制代码
+--结果：返回 2。成功获取返回值
+--成功原因：因为加了同步阻塞，先执行result = 2;再往下执行return result;
